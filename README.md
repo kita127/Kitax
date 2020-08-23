@@ -22,3 +22,10 @@ img ファイル(OS が書き込まれたファイル) を PC で起動するエ
     $ qemu-system-i386 -drive file=helloos.img,format=raw,if=floppy -boot a
 
 マウスが消えた場合は ctrl+option+g でマウスをリリースできる
+
+### NASM
+
+アセンブラ言語
+
+    $ nasm -v
+    NASM version 2.15.04 compiled on Aug 22 2020
