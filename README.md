@@ -16,3 +16,5 @@ PC エミュレータ
 img ファイル(OS が書き込まれたファイル) を PC で起動するエミュレートコマンド
 
     $ qemu-system-i386 -drive file=helloos.img,format=raw,if=floppy -boot a
+
+マウスが消えた場合は ctrl+option+g でマウスをリリースできる
