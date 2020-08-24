@@ -34,6 +34,10 @@ img ファイル(OS が書き込まれたファイル) を PC で起動するエ
 
     $ nasm helloos.nas -o helloos.img
 
+### バイナリエディタ
+
+Hex Fiend
+
 ## 覚書
 
 ### ブートセクタ
