@@ -34,6 +34,10 @@ img ファイル(OS が書き込まれたファイル) を PC で起動するエ
 
     $ nasm helloos.nas -o helloos.img
 
+リストファイルを出力してアセンブル
+
+    $ nasm ipl.nas -o ipl.bin -l ipl.lst
+
 * `$`
     * 現在番地を表す
 * `$$`
@@ -74,9 +78,25 @@ img ファイル(OS が書き込まれたファイル) を PC で起動するエ
   * GS
     * 本名なし
 
-### バイナリエディタ
+### Hex Fiend
 
-Hex Fiend
+バイナリエディタ
+
+### mformat
+
+ディスクイメージ作成ツール
+
+install
+
+    $ brew install mtools
+
+実行
+
+ディスクの先頭に ipl.bin を配置し 1440KB のイメージファイル
+helloos.img を作成する
+
+    $ mformat -f 1440 -C -B ipl.bin -i helloos.img ::
+
 
 ## 覚書
 
