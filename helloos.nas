@@ -1,13 +1,16 @@
 ; hello-os
 ; TAB=4
 
+		ORG		0x7c00			; このプログラムがどこに読み込まれるか
+
 ; 以下は標準的なFAT12フォーマットフロッピーディスクのための記述
 
-		db		0xeb, 0x4e, 0x90		; おまじない
-		db		"HELLOIPL"				; ブートセクタの名前を自由に書いて良い(8バイト)
-		dw		512						; 1セクタの大きさ(512にしなければならない)
-		db		1						; クラスタの大きさ(1セクタにしなければならない)
-		dw		1						; FATがどこから始まるか（普通は1セクタ目からにする）
+		JMP		entry
+		DB		0x90
+		DB		"HELLOIPL"				; ブートセクタの名前を自由に書いて良い(8バイト)
+		DW		512						; 1セクタの大きさ(512にしなければならない)
+		DB		1						; クラスタの大きさ(1セクタにしなければならない)
+		DW		1						; FATがどこから始まるか（普通は1セクタ目からにする）
 		DB		2						; FATの個数（2にしなければいけない）
 		DW		224						; ルートディレクトリ領域の大きさ（普通は224エントリにする）
 		DW		2880					; このドライブの大きさ（2880セクタにしなければいけない）
@@ -25,22 +28,37 @@
 
 ; プログラム本体
 
-		DB		0xb8, 0x00, 0x00, 0x8e, 0xd0, 0xbc, 0x00, 0x7c
-		DB		0x8e, 0xd8, 0x8e, 0xc0, 0xbe, 0x74, 0x7c, 0x8a
-		DB		0x04, 0x83, 0xc6, 0x01, 0x3c, 0x00, 0x74, 0x09
-		DB		0xb4, 0x0e, 0xbb, 0x0f, 0x00, 0xcd, 0x10, 0xeb
-		DB		0xee, 0xf4, 0xeb, 0xfd
+entry:
+		MOV		AX, 0			; レジスタ初期化
+		MOV		SS,AX
+		MOV		SP,0x7c00
+		MOV		DS,AX
+		MOV		ES,AX
 
-; メッセージ部分
+		MOV		SI,msg
+putloop:
+		MOV		AL,[SI]
+		ADD		SI,1
+		CMP		AL,0
+		JE		fin
+		MOV		AH,0x0e			; 一文字表示ファンクション
+		MOV		BX,15			; カラーコード
+		INT		0x10			; ビデオBIOS呼び出し
+		JMP		putloop
+fin:
+		HLT						; 何かあるまでCPUを停止させる
+		JMP		fin				; 無限ループ
 
+msg:
 		DB		0x0a, 0x0a		; 改行を2つ
-		DB		"hello, world"
+		DB		"hello, Kitax"
 		DB		0x0a			; 改行
 		DB		0
 
 		TIMES	0x1fe-($-$$)	DB	0	; ブートセクタの最終 2byte には 55 AA を書き込む必要があるため
-										; 510(0x1fe) から現在行の先頭からのバイト数を引いたサイズ分
-										; 0 で埋める
+										; 現在の番地から 0x7dfe(ORG + 510(0x1fe)byte) まで 0 で埋める
+										; $ : nasm では現在の番地を表す
+										; $$ : nasm では ORG の番地を表す
 
 		DB		0x55, 0xaa				; ブートセクタの最終 2byte には 55 AA を書き込む
 
