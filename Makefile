@@ -1,6 +1,8 @@
 # デフォルト動作
 # デフォルトは先頭に書く
 
+DEL = rm
+
 default :
 	make img
 
@@ -25,6 +27,6 @@ run :
 	qemu-system-i386 -drive file=helloos.img,format=raw,if=floppy -boot a
 
 clean :
-	-rm ipl.bin
-	-rm ipl.lst
-	-rm helloos.img
+	-$(DEL) ipl.bin
+	-$(DEL) ipl.lst
+	-$(DEL) helloos.img
