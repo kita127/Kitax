@@ -7,6 +7,10 @@
 
 ## 開発ツール
 
+Mac 向けの使用ツールについては以下の記事を参考
+
+[https://qiita.com/noanoa07/items/8828c37c2e286522c7ee]()
+
 ### qemu
 
 PC エミュレータ
@@ -86,6 +90,8 @@ img ファイル(OS が書き込まれたファイル) を PC で起動するエ
 
 ディスクイメージ作成ツール
 
+本家の `edimg.exe` の代わり
+
 install
 
     $ brew install mtools
@@ -97,6 +103,9 @@ helloos.img を作成する
 
     $ mformat -f 1440 -C -B ipl.bin -i helloos.img ::
 
+作成したイメージファイルに kitax.sys を保存して再度イメージファイルを作成
+
+    $ mcopy -i kitax.img kitax.sys ::
 
 ## 覚書
 

@@ -11,8 +11,12 @@ default :
 ipl.bin : ipl.nas Makefile
 	nasm ipl.nas -o ipl.bin -l ipl.lst
 
-helloos.img : ipl.bin Makefile
-	mformat -f 1440 -C -B ipl.bin -i helloos.img ::
+kitax.sys : kitax.nas Makefile
+	nasm kitax.nas -o kitax.sys -l kitax.lst
+
+kitax.img : ipl.bin kitax.sys Makefile
+	mformat -f 1440 -C -B ipl.bin -i kitax.img ::
+	mcopy -i kitax.img kitax.sys ::
 
 # コマンド
 
@@ -20,13 +24,15 @@ asm :
 	make -r ipl.bin
 
 img :
-	make -r helloos.img
+	make -r kitax.img
 
 run :
 	make img
-	qemu-system-i386 -drive file=helloos.img,format=raw,if=floppy -boot a
+	qemu-system-i386 -drive file=kitax.img,format=raw,if=floppy -boot a
 
 clean :
 	-$(DEL) ipl.bin
 	-$(DEL) ipl.lst
-	-$(DEL) helloos.img
+	-$(DEL) kitax.img
+	-$(DEL) kitax.sys
+	-$(DEL) kitax.lst

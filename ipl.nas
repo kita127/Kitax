@@ -105,7 +105,7 @@ success:
 		JMP		putloop
 okmsg:
 		DB		0x0a, 0x0a		; 改行を2つ
-		DB		"success 03_04"
+		DB		"success 03_05"
 		DB		0x0a			; 改行
 		DB		0
 
