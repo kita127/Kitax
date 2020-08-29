@@ -1,6 +1,8 @@
 ; haribote-ipl
 ; TAB=4
 
+CYLS	EQU		10				; 読み込むシリンダ数
+
 		ORG		0x7c00			; このプログラムがどこに読み込まれるのか
 
 ; 以下は標準的なFAT12フォーマットフロッピーディスクのための記述
@@ -61,10 +63,19 @@ retry:
 next:
 		MOV		AX,ES			; アドレスを0x200進める
 		ADD		AX,0x20			; 512/16 = 32 = 0x20
-		MOV		ES,AX
-		ADD		CL,1			; 次のセクタ番号を設定する
+		MOV		ES,AX			; ADD ES,0x020 という命令がないのでこうしている
+		ADD		CL,1			; CLに1を足す
+								; 次のセクタ番号を設定する
 		CMP		CL,18			; CLと18を比較
 		JBE		readloop		; CL <= 18 だったらreadloopへ
+		MOV		CL,1			; セクタを1に初期化
+		ADD		DH,1			; ヘッダを加算
+		CMP		DH,2
+		JB		readloop		; DH < 2 だったらreadloopへ
+		MOV		DH,0			; ヘッダを0に初期化
+		ADD		CH,1			; シリンダを加算
+		CMP		CH,CYLS
+		JB		readloop		; CH < CYLS だったらreadloopへ
 		JMP		success
 
 ; 読み終わったけどとりあえずやることないので寝る
@@ -94,7 +105,7 @@ success:
 		JMP		putloop
 okmsg:
 		DB		0x0a, 0x0a		; 改行を2つ
-		DB		"success"
+		DB		"success 03_04"
 		DB		0x0a			; 改行
 		DB		0
 
