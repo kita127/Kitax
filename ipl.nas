@@ -42,12 +42,22 @@ entry:
 		MOV		DH,0			; ヘッド0
 		MOV		CL,2			; セクタ2
 
+		MOV		SI,0			; 失敗回数を数えるレジスタ
+retry:
 		MOV		AH,0x02			; AH=0x02 : ディスク読み込み
 		MOV		AL,1			; 処理するセクタ数 1
 		MOV		BX,0			; バッファアドレス
 		MOV		DL,0x00			; Aドライブ
 		INT		0x13			; ディスクBIOS呼び出し
-		JC		error			; carry フラグが 1 の場合 error にジャンプ
+		JNC		fin				; エラーがおきなければfinへ
+								; carry フラグが 1 の場合
+		ADD		SI,1			; SIに1を足す
+		CMP		SI,5			; SIと5を比較
+		JAE		error			; SI >= 5 だったらerrorへ
+		MOV		AH,0x00
+		MOV		DL,0x00			; Aドライブ
+		INT		0x13			; ドライブのリセット
+		JMP		retry
 
 ; 読み終わったけどとりあえずやることないので寝る
 
