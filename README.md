@@ -42,6 +42,10 @@ img ファイル(OS が書き込まれたファイル) を PC で起動するエ
 
     $ nasm ipl.nas -o ipl.bin -l ipl.lst
 
+win32-COFF 形式のオブジェクトファイルとして出力する
+
+    $ nasm naskfunc.nas -fwin32 -o naskfunc.obj
+
 * `$`
     * 現在番地を表す
 * `$$`

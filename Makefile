@@ -14,12 +14,17 @@ ipl10.bin : ipl10.nas Makefile
 asmhead.bin : asmhead.nas Makefile
 	nasm asmhead.nas -o asmhead.bin -l asmhead.lst
 
+# nasm ではオブジェクトファイルとして出力する場合は -fwin32 を指定する
+naskfunc.obj : naskfunc.nas Makefile
+	nasm naskfunc.nas -fwin32 -o naskfunc.obj -l naskfunc.lst
+
 # mac では 32bit コンパイルができないため docker で作成した ubuntu 環境でコンパイルする
 # 予め環境構築した ubuntu コンテナをコンテナ名 work 作成、停止した状態にする必要がある
-bootpack.hrb : bootpack.c Makefile
+bootpack.hrb : bootpack.c naskfunc.obj Makefile
 	docker start work
 	docker cp bootpack.c work:/root
-	docker exec -w /root work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c
+	docker cp naskfunc.obj work:/root
+	docker exec -w /root work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c naskfunc.obj
 	docker cp work:/root/bootpack.hrb bootpack.hrb
 	docker stop work
 
@@ -53,6 +58,8 @@ clean :
 	-$(DEL) ipl10.lst
 	-$(DEL) asmhead.bin
 	-$(DEL) asmhead.lst
+	-$(DEL) naskfunc.obj
+	-$(DEL) naskfunc.lst
 	-$(DEL) bootpack.hrb
 	-$(DEL) kitax.sys
 	-$(DEL) kitax.img
