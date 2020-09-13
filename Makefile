@@ -26,6 +26,7 @@ bootpack.hrb : bootpack.c naskfunc.obj Makefile
 	docker cp naskfunc.obj work:/root
 	docker exec -w /root work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c naskfunc.obj
 	docker cp work:/root/bootpack.hrb bootpack.hrb
+	docker exec -w /root work sh -c "ls | grep -v "os.ld" | xargs rm"
 	docker stop work
 
 kitax.sys : asmhead.bin bootpack.hrb Makefile
