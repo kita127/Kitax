@@ -107,7 +107,7 @@ helloos.img を作成する
 
     $ mcopy -i kitax.img kitax.sys ::
 
-### hrb.ld
+### os.ld
 
 OS 用リンカスクリプト
 
