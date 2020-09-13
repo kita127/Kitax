@@ -19,7 +19,7 @@ asmhead.bin : asmhead.nas Makefile
 bootpack.hrb : bootpack.c Makefile
 	docker start work
 	docker cp bootpack.c work:/root
-	docker exec -w /root work gcc -march=i486 -m32 -nostdlib -fno-pic -T hrb.ld -o bootpack.hrb bootpack.c
+	docker exec -w /root work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c
 	docker cp work:/root/bootpack.hrb bootpack.hrb
 	docker stop work
 
@@ -37,6 +37,12 @@ asm :
 
 img :
 	make -r kitax.img
+
+docker_run :
+	docker create -it -w /root --name work ubuntu_for_xcomp
+
+docker_remove :
+	docker rm work
 
 run :
 	make img
