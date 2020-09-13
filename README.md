@@ -107,6 +107,46 @@ helloos.img を作成する
 
     $ mcopy -i kitax.img kitax.sys ::
 
+### hrb.ld
+
+OS 用リンカスクリプト
+
+入手元は以下のサイト。情報ありがとうございます
+
+[https://vanya.jp.net/os/haribote.html](『30日でできる！OS自作入門』のメモ)
+
+haribote OS の実行形式にビルドするためのリンカスクリプトとなっている
+
+### C コンパイル
+
+調査した感じ catalina では 32bit 向けクロスコンパイルに必要なコンパイラ及びツール類を揃えることが難しい
+そのため docker で ubuntu 環境のコンテナを作成しそこで 32bit コンパイルする対応とした
+
+1. docker で ubuntu のリポジトリを入手する
+    * `docker pull ubunntu:18.04`
+1. 作成した ubuntu コンテナに gcc をインストールする
+1. ubuntu コンテナのホームディレクトリに hrb.ld を置く
+1. ここまでの環境の ubuntu コンテナから image を作成する
+    * イメージ名 `ubuntu_for_xcomp` で作成
+1. 一旦全てのコンテナを停止、削除する
+1. `ubuntu_for_xcomp` イメージからコンテナ名 `work` を作成する
+1. `make bootpack.hrb` を実行する
+    1. make bootpack.hrb の内訳は以下
+    1. work コンテナを start
+    1. コンテナにコンパイル対象の `bootpack.c` を渡す
+    1. `docker exec` コマンドで `bootpack.c` をコンパイル
+    1. コンパイル結果をホスト環境に渡す
+    1. work コンテナを stop
+
+GCC のコマンドは以下を参考にさせていただきました。ありがとうございます
+
+[https://qiita.com/noanoa07/items/8828c37c2e286522c7ee](『30日でできる！OS自作入門』を macOS Catalina で実行する)
+
+	$ gcc -march=i486 -m32 -nostdlib -fno-pic -T hrb.ld -o bootpack.hrb bootpack.c
+
+bootpack が位置独立実行形式(position independent cod)のためのシンボル `_GLOBAL_OFFSET_TABLE_` を
+参照しようとするが不要なためオプション `-fno-pic` を追加した
+
 ## 覚書
 
 ### ブートセクタ
