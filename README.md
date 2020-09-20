@@ -3,7 +3,15 @@
 
 ## OS 起動方法
 
-    $ ./run.sh
+* 事前準備
+    * C コンパイルするために docker コンテナの起動が必要
+    * `$ make docker_run`
+* OS のイメージファイルを作成
+    * `$ make`
+* OS の起動
+    * `$ make run`
+* 終わったら docker コンテナを削除する
+    * `$ docker_remove`
 
 ## 開発ツール
 
