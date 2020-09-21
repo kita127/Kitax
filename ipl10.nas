@@ -1,111 +1,181 @@
 ; kitax-ipl
 ; TAB=4
+; qemu-system-x86_64 -usb kitax.img にて起動する
 
-CYLS	EQU		10				; 読み込むシリンダ数
 
-		ORG		0x7c00			; このプログラムがどこに読み込まれるのか
+[bits 16]
+[ORG 0x7c00]
+        ;; BPB Structure
+JMP     entry           ;BS_jmpBoot
+NOP
+BS_OEMName      DB "KITAX   "	; ブートセクタの名前を自由に書いてよい（8バイト）
+BPB_BytsPerSec  DW 0x0200
+BPB_SecPerClus  DB 0x01
+BPB_RsvdSecCnt  DW 0x0001
+BPB_NumFATs     DB 0x02
+BPB_RootEntCnt  DW 0x0000
+BPB_TotSec16    DW 0x0000
+BPB_Media       DB 0xf8
+BPB_FATSz16     DW 0x0000
+BPB_SecPerTrk   DW 0xffff
+BPB_NumHeads    DW 0x0001
+BPB_HiDDSec     DD 0x00000000
+BPB_TotSec32    DD 0x00ee5000
+BPB_FATSz32     DD 0x000000ed
+BPB_ExtFlags    DW 0x0000
+BPB_FSVer       DW 0x0000
+BPB_RootClus    DD 0x00000000
+BPB_FSInfo      DW 0x0001
+BPB_BkBootSec   DW 0x0000
+times   12      DB 0    ;BPB_Reserverd
+BS_DrvNum       DB 0x80
+BS_Reserved1    DB 0x00
+BS_BootSig      DB 0x29
+BS_VolID        DD 0xa0a615c
+BS_VolLab       DB "KITAXOS    "	; ディスクの名前（11バイト）
+BS_FileSysType  DB "FAT32   "
 
-; 以下は標準的なFAT12フォーマットフロッピーディスクのための記述
 
-		JMP		entry
-		DB		0x90
-		DB		"KITAX   "		; ブートセクタの名前を自由に書いてよい（8バイト）
-		DW		512				; 1セクタの大きさ（512にしなければいけない）
-		DB		1				; クラスタの大きさ（1セクタにしなければいけない）
-		DW		1				; FATがどこから始まるか（普通は1セクタ目からにする）
-		DB		2				; FATの個数（2にしなければいけない）
-		DW		224				; ルートディレクトリ領域の大きさ（普通は224エントリにする）
-		DW		2880			; このドライブの大きさ（2880セクタにしなければいけない）
-		DB		0xf0			; メディアのタイプ（0xf0にしなければいけない）
-		DW		9				; FAT領域の長さ（9セクタにしなければいけない）
-		DW		18				; 1トラックにいくつのセクタがあるか（18にしなければいけない）
-		DW		2				; ヘッドの数（2にしなければいけない）
-		DD		0				; パーティションを使ってないのでここは必ず0
-		DD		2880			; このドライブ大きさをもう一度書く
-		DB		0,0,0x29		; よくわからないけどこの値にしておくといいらしい
-		DD		0xffffffff		; たぶんボリュームシリアル番号
-		DB		"KITAXOS    "	; ディスクの名前（11バイト）
-		DB		"FAT12   "		; フォーマットの名前（8バイト）
-		TIMES	18	DB	0		; とりあえず18バイトあけておく
-
-; プログラム本体
 
 entry:
-		MOV		AX,0			; レジスタ初期化
-		MOV		SS,AX
-		MOV		SP,0x7c00
-		MOV		DS,AX
+    CLI
 
-; ディスクを読む
-; 10*2*18*512 = 184,320B = 180KB
+    MOV AX, 0
+    MOV DS, AX
+    MOV SS, AX
+    MOV ES, AX
+    MOV BX, AX
+    MOV CX, AX
+    MOV SP, 0x7c00
+prepare:
+    STI
+    MOV [drv], DL
 
-		MOV		AX,0x0820
-		MOV		ES,AX			; バッファアドレス
-		MOV		CH,0			; シリンダ0
-		MOV		DH,0			; ヘッド0
-		MOV		CL,2			; セクタ2
-readloop:
-		MOV		SI,0			; 失敗回数を数えるレジスタ
+    MOV AH, 0x41                ; Set Function 0x41
+    MOV word bx, 0x55aa
+    INT 0x13                   ; Call Interupt
+    JC unsupported        ; If Extentions aren't Supported, Jump
+
+
+
+
+   xor ax, ax
+   add ax, 1                   ; clear carry flag
+   XOR EDI, EDI
+
+   MOV AH, 0x45
+   MOV AL, 0x01
+   MOV DL, 0x80
+   INT 0x13
+
+   MOV AX, 0
+   MOV DS, AX
+
+loop:
+    MOV CL, 0
 retry:
-		MOV		AH,0x02			; AH=0x02 : ディスク読み込み
-		MOV		AL,1			; 処理するセクタ数 1
-		MOV		BX,0			; バッファアドレス
-		MOV		DL,0x00			; Aドライブ
-		INT		0x13			; ディスクBIOS呼び出し
-		JNC		next			; エラーがおきなければnextへ
-								; carry フラグが 1 の場合
-		ADD		SI,1			; SIに1を足す
-		CMP		SI,5			; SIと5を比較
-		JAE		error			; SI >= 5 だったらerrorへ
-		MOV		AH,0x00
-		MOV		DL,0x00			; Aドライブ
-		INT		0x13			; ドライブのリセット
-		JMP		retry
+    PUSH DS
+    PUSHAD
+    MOV DL, [drv]
+    MOV AH, 0x42
+    MOV AL, 0x00
+    MOV SI, DAPS
+    INT 0x13
+    JNC next
+
+    ADD CL, 1
+    MOV DL, 0x80
+    MOV AH, 0x00
+    INT 0x13
+    CMP CL, 6
+    JAE error
+    JMP retry
 next:
-		MOV		AX,ES			; アドレスを0x200進める
-		ADD		AX,0x20			; 512/16 = 32 = 0x20
-		MOV		ES,AX			; ADD ES,0x020 という命令がないのでこうしている
-		ADD		CL,1			; CLに1を足す
-								; 次のセクタ番号を設定する
-		CMP		CL,18			; CLと18を比較
-		JBE		readloop		; CL <= 18 だったらreadloopへ
-		MOV		CL,1			; セクタを1に初期化
-		ADD		DH,1			; ヘッダを加算
-		CMP		DH,2
-		JB		readloop		; DH < 2 だったらreadloopへ
-		MOV		DH,0			; ヘッダを0に初期化
-		ADD		CH,1			; シリンダを加算
-		CMP		CH,CYLS
-		JB		readloop		; CH < CYLS だったらreadloopへ
 
-; 読み終わったのでharibote.sysを実行だ！
+    XOR EAX, EAX
+    XOR EBX, EBX
+    XOR ECX, ECX
 
-		MOV		[0x0ff0],CH		; IPLがどこまで読んだのかをメモ
-		JMP		0xc200
+    ADD EDI, 1
+    MOV ECX, lba0
+    MOV [ECX], EDI
 
+    XOR EAX, EAX
+    XOR ECX, ECX
+    XOR EBP, EBP
+
+    MOV AX, [addr]
+    MOV ECX, addr
+    MOV EBX, segm
+    ADD AX, 0x200
+    ADC BP, 0
+    SHL BP, 12
+    ADD BP, [segm]
+    MOV [EBX], BP
+
+
+    MOV [ECX], AX
+    MOV [EBX], BP
+
+    CMP EDI, 0x16a
+    JB loop
+
+    MOV ECX, 0xc200
+
+    MOV EAX, 0x0000
+    MOV EBX, EAX
+    MOV EDX, EAX
+    MOV EBP, EAX
+    MOV ESI, EAX
+    MOV EDI, EAX
+
+    MOV CH, 10
+    MOV [0x0ff0], CH
+
+    MOV ECX, EAX
+    JMP 0x0000:0xc200
 error:
-		MOV		SI,msg
+    POPAD
+    POP DS
+    MOV     SI,msg
 putloop:
-		MOV		AL,[SI]
-		ADD		SI,1			; SIに1を足す
-		CMP		AL,0
-		JE		fin
-		MOV		AH,0x0e			; 一文字表示ファンクション
-		MOV		BX,15			; カラーコード
-		INT		0x10			; ビデオBIOS呼び出し
-		JMP		putloop
+    MOV     AL,[SI]
+    ADD     SI,1
+    CMP     AL,0
+    JE      fin
+    MOV     AH,0x0e
+    MOV     BX,0
+    INT     0x10
+    JMP     putloop
 fin:
-		HLT						; 何かあるまでCPUを停止させる
-		JMP		fin				; 無限ループ
+    HLT
+    JMP     fin
 msg:
-		DB		0x0a, 0x0a		; 改行を2つ
-		DB		"load error"
-		DB		0x0a			; 改行
-		DB		0
+    DB      0x0a, 0x0a
+    DB      "load error"
+    DB      0x0a
+    DB      0
+msg1:
+    DB      0x0a, 0x0a
+    DB      "not supported"
+    DB      0x0a
+    DB      0
 
-		TIMES	0x1fe-($-$$)	DB	0	; ブートセクタの最終 2byte には 55 AA を書き込む必要があるため
-										; 現在の番地から 0x7dfe(ORG + 510(0x1fe)byte) まで 0 で埋める
-										; $ : nasm では現在の番地を表す
-										; $$ : nasm では ORG の番地を表す
+unsupported:
+    MOV SI, msg1
+    JMP putloop
 
-		DB		0x55, 0xaa				; ブートセクタの最終 2byte には 55 AA を書き込む
+drv:    DB 0x80
+DAPS:   DB 0x10               ; Size of Structure (16 bytes, always this for DAPS)
+        DB 0                  ; Always 0
+        DB 1                  ; Number of Sectors to Read (1x512)
+        DB 0                  ; Always 0
+addr:   DW 0x8000             ; Target Location for Reading To (0x8000 = 0x0800:0x0000)
+segm:   DW 0x0000             ; Page Table (0, Disabled)
+lba0:   DD 1                  ; Read from 2nd block (code I want to load)
+        DD 0                  ; Large LBAs, dunno what this does
+
+
+
+    RESB    0x01fe-($-$$)
+    DW 0AA55h
