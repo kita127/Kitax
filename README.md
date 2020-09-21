@@ -17,7 +17,7 @@
 
 Mac 向けの使用ツールについては以下の記事を参考
 
-[https://qiita.com/noanoa07/items/8828c37c2e286522c7ee]()
+[『30日でできる！OS自作入門』を macOS Catalina で実行する](https://qiita.com/noanoa07/items/8828c37c2e286522c7ee)
 
 ### qemu
 
@@ -125,7 +125,7 @@ OS 用リンカスクリプト
 
 入手元は以下のサイト。情報ありがとうございます
 
-[https://vanya.jp.net/os/haribote.html](『30日でできる！OS自作入門』のメモ)
+[『30日でできる！OS自作入門』のメモ](https://vanya.jp.net/os/haribote.html)
 
 haribote OS の実行形式にビルドするためのリンカスクリプトとなっている
 
@@ -152,7 +152,7 @@ haribote OS の実行形式にビルドするためのリンカスクリプト�
 
 GCC のコマンドは以下を参考にさせていただきました。ありがとうございます
 
-[https://qiita.com/noanoa07/items/8828c37c2e286522c7ee](『30日でできる！OS自作入門』を macOS Catalina で実行する)
+[『30日でできる！OS自作入門』を macOS Catalina で実行する](https://qiita.com/noanoa07/items/8828c37c2e286522c7ee)
 
 	$ gcc -march=i486 -m32 -nostdlib -fno-pic -T hrb.ld -o bootpack.hrb bootpack.c
 
