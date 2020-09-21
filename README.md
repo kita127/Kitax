@@ -159,6 +159,47 @@ GCC のコマンドは以下を参考にさせていただきました。あり�
 bootpack が位置独立実行形式(position independent cod)のためのシンボル `_GLOBAL_OFFSET_TABLE_` を
 参照しようとするが不要なためオプション `-fno-pic` を追加した
 
+
+## USB ブート
+
+USB フラッシュメモリでのブート方法をまとめる
+
+ただし、OS のフラッシュメモリ作成には作業PCのドライブを誤って上書きしてしまう恐れがあるため
+基本はエミュレータ上で実行する運用とした方がよい
+
+* 参考にさせていただきました
+    * [３０日OS自作入門　１３日目途中　USBから実機で起動できた](https://cgod-kei.blogspot.com/2018/09/osusb30os.html)
+    * [参考GitHub](https://github.com/keita99/30dayOS/tree/master/day_13/harib10c)
+
+### USB 用 IPL
+
+IPL からの読み出し方法が USB とフロッピーでは異なるため ipl10.nas を変更する必要がある
+
+### USB フラッシュメモリ作成方法
+
+以下の手順で壊れても良い USB フラッシュメモリに OS のイメージファイルを書き込む
+
+```
+# USB の挿さっているディスクを確認する
+diskutil list
+
+# USB をアンマウントする
+diskutil unMountDisk /dev/diskN
+
+# USB フラッシュメモリにイメージファイルを書き込む
+# dd の出力先間違えると PC のドライブを上書きする可能性があるため注意
+sudo dd if=kitax.img of=/dev/diskN
+
+```
+
+### エミュレータ実行
+
+USB フラッシュメモリ用のイメージファイルをエミュレータで実行する方法
+
+```
+qemu-system-x86_64 -usb kitax.img
+```
+
 ## 覚書
 
 ### ブートセクタ

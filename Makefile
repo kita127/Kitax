@@ -52,7 +52,7 @@ docker_remove :
 
 run :
 	make img
-	qemu-system-i386 -drive file=kitax.img,format=raw,if=floppy -boot a
+	qemu-system-x86_64 -drive file=kitax.img,format=raw -usb
 
 clean :
 	-$(DEL) ipl10.bin
