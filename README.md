@@ -1,5 +1,7 @@
 # Kitax
-自作 OS. 実態は「30日でできる！OS入門」
+自作 32bit OS
+
+実態は[30日でできる！ OS自作入門](https://book.mynavi.jp/supportsite/detail/4839919844.html)
 
 ## OS 起動方法
 
