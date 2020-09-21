@@ -1,23 +1,47 @@
-#define PALETTE_NUM (16)
-
-void io_hlt(void);
-void write_mem8(int addr, int data);
 void init_palette(void);
 void set_palette(int start, int end, unsigned char rgb[]);
+void boxfill8(unsigned char *vram, int xsize, unsigned char color, int x_s,
+              int y_s, int x_e, int y_e);
 
+/* naskfunc */
+void io_hlt(void);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 void io_out8(int port, char data);
 void io_cli(void);
 
+#define PALETTE_NUM (16)
+#define X_SIZE      (320)
+
+#define COL8_000000 (0)  /*  0:黒 */
+#define COL8_FF0000 (1)  /*  1:明るい赤 */
+#define COL8_00FF00 (2)  /*  2:明るい緑 */
+#define COL8_FFFF00 (3)  /*  3:明るい黄色 */
+#define COL8_0000FF (4)  /*  4:明るい青 */
+#define COL8_FF00FF (5)  /*  5:明るい紫 */
+#define COL8_00FFFF (6)  /*  6:明るい水色 */
+#define COL8_FFFFFF (7)  /*  7:白 */
+#define COL8_C6C6C6 (8)  /*  8:明るい灰色 */
+#define COL8_840000 (9)  /*  9:暗い赤 */
+#define COL8_008400 (10) /* 10:暗い緑 */
+#define COL8_848400 (11) /* 11:暗い黄色 */
+#define COL8_000084 (12) /* 12:暗い青 */
+#define COL8_840084 (13) /* 13:暗い紫 */
+#define COL8_008484 (14) /* 14:暗い水色 */
+#define COL8_848484 (15) /* 15:暗い灰色 */
+
 void HariMain(void) {
     int i;
+    unsigned char *p;
 
     init_palette();
 
-    for (i = 0xa0000; i <= 0xaffff; i++) {
-        *((char *)i) = i & 0x0f;
-    }
+    p = (char *)0xa0000;
+
+    boxfill8(p, X_SIZE, COL8_FF0000, 20, 20, 120, 120);
+    boxfill8(p, X_SIZE, COL8_00FF00, 70, 50, 170, 150);
+    boxfill8(p, X_SIZE, COL8_0000FF, 120, 80, 220, 180);
+
     for (;;) {
         io_hlt();
     }
@@ -61,4 +85,14 @@ void set_palette(int start, int end, unsigned char rgb[]) {
         rgb += 3;
     }
     io_store_eflags(eflags);
+}
+
+void boxfill8(unsigned char *vram, int xsize, unsigned char color, int x_s,
+              int y_s, int x_e, int y_e) {
+    int x, y;
+    for (y = y_s; y <= y_e; y++) {
+        for (x = x_s; x <= x_e; x++) {
+            vram[y * xsize + x] = color;
+        }
+    }
 }
