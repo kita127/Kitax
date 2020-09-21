@@ -97,6 +97,28 @@ helloos.img を作成する
 
     $ mformat -f 1440 -C -B ipl.bin -i helloos.img ::
 
+## USB ブート
+
+ブート用の USB フラッシュメモリ作成方法
+
+ipl の読み出しまではできるが, ipl のフラッシュメモリからブートプログラムを読み出す処理は
+フロッピーディスクを想定したコードとなっているため、そこは USB 向けに修正をする必要がある
+
+
+```
+# USB の挿さっているディスクを確認する
+diskutil list
+
+# USB をアンマウントする
+diskutil unMountDisk /dev/diskN
+
+# USB フラッシュメモリにイメージファイルを書き込む
+sudo dd if=helloos.img of=/dev/diskN
+
+```
+
+ipl.nas の前半にある フロッピーディスクに関するおまじないは書いたままでも問題ないようだ
+
 
 ## 覚書
 
