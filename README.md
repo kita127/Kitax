@@ -1,7 +1,14 @@
 # Kitax
 自作 32bit OS
 
-実態は[30日でできる！ OS自作入門](https://book.mynavi.jp/supportsite/detail/4839919844.html)
+書籍[30日でできる！ OS自作入門](https://book.mynavi.jp/supportsite/detail/4839919844.html)を元に作成したOS
+
+## 環境
+
+* 開発PC
+    * Mac 10.15.6(Catalina)
+* Docker
+    * C 言語クロスコンパイル環境の構築に使用
 
 ## OS 起動方法
 
