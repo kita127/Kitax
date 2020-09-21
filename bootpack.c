@@ -8,6 +8,7 @@ void set_palette(int start, int end, unsigned char rgb[]);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 void io_out8(int port, char data);
+void io_cli(void);
 
 void HariMain(void) {
     int i;
@@ -50,6 +51,7 @@ void set_palette(int start, int end, unsigned char rgb[]) {
     int i;
     int eflags;
     eflags = io_load_eflags();
+    io_cli();
     io_out8(0x03c8, start);
     for (i = start; i <= end; i++) {
         /* n / 4 している理由は不明 */

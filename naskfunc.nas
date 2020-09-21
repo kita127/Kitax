@@ -6,6 +6,7 @@
 ; オブジェクトファイルのための情報
 
 	GLOBAL	io_hlt		; このプログラムに含まれる関数名
+	GLOBAL	io_cli
 	GLOBAL	io_out8
 	GLOBAL	io_load_eflags
 	GLOBAL	io_store_eflags
@@ -16,6 +17,10 @@
 
 io_hlt:		; void io_hlt(void);
 	HLT
+	RET
+
+io_cli:		; void io_cli(void);
+	CLI
 	RET
 
 io_out8:	; void io_out8(int port, char data);
