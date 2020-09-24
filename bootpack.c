@@ -37,18 +37,12 @@ typedef struct {
 } BOOTINFO;
 
 void HariMain(void) {
-    unsigned char *vram;
-    int xsize, ysize;
     BOOTINFO *binfo;
 
     init_palette();
     binfo = (BOOTINFO *)0x0ff0;
 
-    vram = binfo->vram;
-    xsize = binfo->scrnx;
-    ysize = binfo->scrny;
-
-    init_screen(vram, xsize, ysize);
+    init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
     for (;;) {
         io_hlt();
