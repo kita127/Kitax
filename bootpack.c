@@ -30,20 +30,23 @@ void io_cli(void);
 #define COL8_008484 (14) /* 14:暗い水色 */
 #define COL8_848484 (15) /* 15:暗い灰色 */
 
+typedef struct {
+    char cyls, leds, vmode, reserve;
+    short scrnx, scrny;
+    unsigned char *vram;
+} BOOTINFO;
+
 void HariMain(void) {
     unsigned char *vram;
     int xsize, ysize;
-    short *bootinfo_scrnx, *bootinfo_scrny;
-    int *bootinfo_vram;
+    BOOTINFO *binfo;
 
     init_palette();
-    bootinfo_scrnx = (short *)0x0ff4;
-    bootinfo_scrny = (short *)0x0ff6;
-    bootinfo_vram = (int *)0x0ff8;
+    binfo = (BOOTINFO *)0x0ff0;
 
-    vram = (char *)(*bootinfo_vram);
-    xsize = (int)*bootinfo_scrnx;
-    ysize = (int)*bootinfo_scrny;
+    vram = binfo->vram;
+    xsize = binfo->scrnx;
+    ysize = binfo->scrny;
 
     init_screen(vram, xsize, ysize);
 
