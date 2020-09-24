@@ -34,13 +34,13 @@ PC エミュレータ
 
 バージョン
 
-    $ qemu-system-i386 --version
+    $ qemu-system-x86_64 --version
     QEMU emulator version 5.1.0
     Copyright (c) 2003-2020 Fabrice Bellard and the QEMU Project developers
 
 img ファイル(OS が書き込まれたファイル) を PC で起動するエミュレートコマンド
 
-    $ qemu-system-i386 -drive file=helloos.img,format=raw,if=floppy -boot a
+	$ qemu-system-x86_64 -drive file=kitax.img,format=raw -usb
 
 マウスが消えた場合は ctrl+option+g でマウスをリリースできる
 
