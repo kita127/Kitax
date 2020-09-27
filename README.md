@@ -14,13 +14,13 @@
 
 * 事前準備
     * C コンパイルするために docker コンテナの起動が必要
-    * `$ make docker_run`
+    * `$ make start`
 * OS のイメージファイルを作成
     * `$ make`
 * OS の起動
     * `$ make run`
 * 終わったら docker コンテナを削除する
-    * `$ docker_remove`
+    * `$ make stop`
 
 ## 開発ツール
 

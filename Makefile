@@ -44,10 +44,10 @@ asm :
 img :
 	make -r kitax.img
 
-docker_run :
+start :
 	docker create -it -w /root --name work ubuntu_for_xcomp
 
-docker_remove :
+stop :
 	docker rm work
 
 run :
