@@ -3,6 +3,8 @@ void set_palette(int start, int end, unsigned char rgb[]);
 void boxfill8(unsigned char *vram, int xsize, unsigned char color, int x_s,
               int y_s, int x_e, int y_e);
 void init_screen(unsigned char *vram, int xsize, int ysize);
+void putfont8(unsigned char *vram, short xsize, int x, int y, char color,
+              char font[]);
 
 /* naskfunc */
 void io_hlt(void);
@@ -38,11 +40,15 @@ typedef struct {
 
 void HariMain(void) {
     BOOTINFO *binfo;
+    static char font_A[16] = {0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
+                              0x24, 0x7e, 0x42, 0x42, 0x42, 0xe7, 0x00, 0x00};
 
     init_palette();
     binfo = (BOOTINFO *)0x0ff0;
 
     init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+
+    putfont8(binfo->vram, binfo->scrnx, 10, 10, COL8_FFFFFF, font_A);
 
     for (;;) {
         io_hlt();
@@ -120,4 +126,40 @@ void init_screen(unsigned char *vram, int xsize, int ysize) {
              ysize - 3);
     boxfill8(vram, xsize, COL8_FFFFFF, xsize - 3, ysize - 24, xsize - 3,
              ysize - 3);
+}
+
+void putfont8(unsigned char *vram, short xsize, int x, int y, char color,
+              char font[]) {
+    int i;
+    unsigned char *p;
+    char d;
+
+    for (i = 0; i < 16; i++) {
+        p = vram + (y + i) * xsize + x;
+        d = font[i];
+        if ((d & 0x80) != 0x00) {
+            p[0] = color;
+        }
+        if ((d & 0x40) != 0x00) {
+            p[1] = color;
+        }
+        if ((d & 0x20) != 0x00) {
+            p[2] = color;
+        }
+        if ((d & 0x10) != 0x00) {
+            p[3] = color;
+        }
+        if ((d & 0x08) != 0x00) {
+            p[4] = color;
+        }
+        if ((d & 0x04) != 0x00) {
+            p[5] = color;
+        }
+        if ((d & 0x02) != 0x00) {
+            p[6] = color;
+        }
+        if ((d & 0x01) != 0x00) {
+            p[7] = color;
+        }
+    }
 }
