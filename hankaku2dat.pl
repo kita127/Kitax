@@ -16,12 +16,12 @@ foreach my $l (@lines){
 
     my $d = 0x00;
     my @cs = split(//, $l);
-    my $i = 0;
+    my $i = 7;
     foreach my $c (@cs){
         if($c eq "*"){
             $d |= 0x01 << $i;
         }
-        $i++;
+        $i--;
     }
     push(@dats, $d);
 }
