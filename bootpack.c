@@ -8,6 +8,8 @@ void putfont8(unsigned char *vram, short xsize, int x, int y, char color,
 void putfonts8_asc(unsigned char *vram, short xsize, int x, int y, char color,
                    char s[]);
 
+void mysprintf(char *str, char *fmt, ...);
+
 /* naskfunc */
 void io_hlt(void);
 int io_load_eflags(void);
@@ -42,6 +44,7 @@ typedef struct {
 
 void HariMain(void) {
     BOOTINFO *binfo;
+    char s[64];
 
     init_palette();
     binfo = (BOOTINFO *)0x0ff0;
@@ -51,6 +54,8 @@ void HariMain(void) {
     putfonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "ABC 123");
     putfonts8_asc(binfo->vram, binfo->scrnx, 31, 31, COL8_000000, "Kitax OS.");
     putfonts8_asc(binfo->vram, binfo->scrnx, 30, 30, COL8_FFFFFF, "Kitax OS.");
+    mysprintf(s, "scrnx = %d", binfo->scrnx);
+    putfonts8_asc(binfo->vram, binfo->scrnx, 16, 64, COL8_FFFFFF, s);
 
     for (;;) {
         io_hlt();

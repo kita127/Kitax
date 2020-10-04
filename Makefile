@@ -27,8 +27,9 @@ bootpack.hrb : bootpack.c hankaku.c naskfunc.obj Makefile
 	docker start work
 	docker cp bootpack.c work:/root
 	docker cp hankaku.c work:/root
+	docker cp mystdio.c work:/root
 	docker cp naskfunc.obj work:/root
-	docker exec -w /root work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c hankaku.c naskfunc.obj
+	docker exec -w /root work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c hankaku.c mystdio.c naskfunc.obj
 	docker cp work:/root/bootpack.hrb bootpack.hrb
 	docker exec -w /root work sh -c "ls | grep -v "os.ld" | xargs rm"
 	docker stop work
