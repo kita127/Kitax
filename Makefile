@@ -18,13 +18,17 @@ asmhead.bin : asmhead.nas Makefile
 naskfunc.obj : naskfunc.nas Makefile
 	nasm naskfunc.nas -fwin32 -o naskfunc.obj -l naskfunc.lst
 
+hankaku.c : hankaku.txt hankaku2dat.pl Makefile
+	perl hankaku2dat.pl > hankaku.c
+
 # mac では 32bit コンパイルができないため docker で作成した ubuntu 環境でコンパイルする
 # 予め環境構築した ubuntu コンテナをコンテナ名 work 作成、停止した状態にする必要がある
-bootpack.hrb : bootpack.c naskfunc.obj Makefile
+bootpack.hrb : bootpack.c hankaku.c naskfunc.obj Makefile
 	docker start work
 	docker cp bootpack.c work:/root
+	docker cp hankaku.c work:/root
 	docker cp naskfunc.obj work:/root
-	docker exec -w /root work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c naskfunc.obj
+	docker exec -w /root work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c hankaku.c naskfunc.obj
 	docker cp work:/root/bootpack.hrb bootpack.hrb
 	docker exec -w /root work sh -c "ls | grep -v "os.ld" | xargs rm"
 	docker stop work
@@ -61,6 +65,7 @@ clean :
 	-$(DEL) asmhead.lst
 	-$(DEL) naskfunc.obj
 	-$(DEL) naskfunc.lst
+	-$(DEL) hankaku.c
 	-$(DEL) bootpack.hrb
 	-$(DEL) kitax.sys
 	-$(DEL) kitax.img
