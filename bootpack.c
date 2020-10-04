@@ -5,6 +5,8 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char color, int x_s,
 void init_screen(unsigned char *vram, int xsize, int ysize);
 void putfont8(unsigned char *vram, short xsize, int x, int y, char color,
               char font[]);
+void putfonts8_asc(unsigned char *vram, short xsize, int x, int y, char color,
+                   char s[]);
 
 /* naskfunc */
 void io_hlt(void);
@@ -40,24 +42,15 @@ typedef struct {
 
 void HariMain(void) {
     BOOTINFO *binfo;
-    extern char hankaku[4096];
 
     init_palette();
     binfo = (BOOTINFO *)0x0ff0;
 
     init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
-    putfont8(binfo->vram, binfo->scrnx, 8, 10, COL8_FFFFFF, hankaku + 'A' * 16);
-    putfont8(binfo->vram, binfo->scrnx, 16, 10, COL8_FFFFFF,
-             hankaku + 'B' * 16);
-    putfont8(binfo->vram, binfo->scrnx, 24, 10, COL8_FFFFFF,
-             hankaku + 'C' * 16);
-    putfont8(binfo->vram, binfo->scrnx, 40, 10, COL8_FFFFFF,
-             hankaku + '1' * 16);
-    putfont8(binfo->vram, binfo->scrnx, 48, 10, COL8_FFFFFF,
-             hankaku + '2' * 16);
-    putfont8(binfo->vram, binfo->scrnx, 56, 10, COL8_FFFFFF,
-             hankaku + '3' * 16);
+    putfonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "ABC 123");
+    putfonts8_asc(binfo->vram, binfo->scrnx, 31, 31, COL8_000000, "Kitax OS.");
+    putfonts8_asc(binfo->vram, binfo->scrnx, 30, 30, COL8_FFFFFF, "Kitax OS.");
 
     for (;;) {
         io_hlt();
@@ -170,5 +163,14 @@ void putfont8(unsigned char *vram, short xsize, int x, int y, char color,
         if ((d & 0x01) != 0x00) {
             p[7] = color;
         }
+    }
+}
+
+void putfonts8_asc(unsigned char *vram, short xsize, int x, int y, char color,
+                   char s[]) {
+    extern char hankaku[4096];
+    for (; *s != '\0'; s++) {
+        putfont8(vram, xsize, x, y, color, hankaku + *s * 16);
+        x += 8;
     }
 }
