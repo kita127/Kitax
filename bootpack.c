@@ -1,14 +1,15 @@
 void init_palette(void);
 void set_palette(int start, int end, unsigned char rgb[]);
-void boxfill8(unsigned char *vram, int xsize, unsigned char color, int x_s,
-              int y_s, int x_e, int y_e);
-void init_screen(unsigned char *vram, int xsize, int ysize);
-void putfont8(unsigned char *vram, short xsize, int x, int y, char color,
-              char font[]);
-void putfonts8_asc(unsigned char *vram, short xsize, int x, int y, char color,
-                   char s[]);
+void boxfill8(char *vram, int xsize, unsigned char color, int x_s, int y_s,
+              int x_e, int y_e);
+void init_screen(char *vram, int xsize, int ysize);
+void putfont8(char *vram, short xsize, int x, int y, char color, char font[]);
+void putfonts8_asc(char *vram, short xsize, int x, int y, char color, char s[]);
 
 void mysprintf(char *str, char *fmt, ...);
+void init_mouse_cursor8(char *mouse, char bc);
+void putblock8_8(char vram[], short vxsize, int pxsize, int pysize, int px,
+                 int py, char buf[], int bxsize);
 
 /* naskfunc */
 void io_hlt(void);
@@ -39,23 +40,24 @@ void io_cli(void);
 typedef struct {
     char cyls, leds, vmode, reserve;
     short scrnx, scrny;
-    unsigned char *vram;
+    char *vram;
 } BOOTINFO;
 
 void HariMain(void) {
-    BOOTINFO *binfo;
+    BOOTINFO *binfo = (BOOTINFO *)0x0ff0;
     char s[64];
+    int mx, my;
+    char mcursor[16 * 16];
 
     init_palette();
-    binfo = (BOOTINFO *)0x0ff0;
-
     init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+    mx = (binfo->scrnx - 16) / 2;
+    my = (binfo->scrny - 28 - 16) / 2;
+    init_mouse_cursor8(mcursor, COL8_008484);
+    putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
 
-    putfonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "ABC 123");
-    putfonts8_asc(binfo->vram, binfo->scrnx, 31, 31, COL8_000000, "Kitax OS.");
-    putfonts8_asc(binfo->vram, binfo->scrnx, 30, 30, COL8_FFFFFF, "Kitax OS.");
-    mysprintf(s, "scrnx = %d", binfo->scrnx);
-    putfonts8_asc(binfo->vram, binfo->scrnx, 16, 64, COL8_FFFFFF, s);
+    mysprintf(s, "(%d, %d)", mx, my);
+    putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
 
     for (;;) {
         io_hlt();
@@ -102,8 +104,8 @@ void set_palette(int start, int end, unsigned char rgb[]) {
     io_store_eflags(eflags);
 }
 
-void boxfill8(unsigned char *vram, int xsize, unsigned char color, int x_s,
-              int y_s, int x_e, int y_e) {
+void boxfill8(char *vram, int xsize, unsigned char color, int x_s, int y_s,
+              int x_e, int y_e) {
     int x, y;
     for (y = y_s; y <= y_e; y++) {
         for (x = x_s; x <= x_e; x++) {
@@ -112,7 +114,7 @@ void boxfill8(unsigned char *vram, int xsize, unsigned char color, int x_s,
     }
 }
 
-void init_screen(unsigned char *vram, int xsize, int ysize) {
+void init_screen(char *vram, int xsize, int ysize) {
     boxfill8(vram, xsize, COL8_008484, 0, 0, xsize - 1, ysize - 29);
     boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 28, xsize - 1, ysize - 28);
     boxfill8(vram, xsize, COL8_FFFFFF, 0, ysize - 27, xsize - 1, ysize - 27);
@@ -135,10 +137,9 @@ void init_screen(unsigned char *vram, int xsize, int ysize) {
              ysize - 3);
 }
 
-void putfont8(unsigned char *vram, short xsize, int x, int y, char color,
-              char font[]) {
+void putfont8(char *vram, short xsize, int x, int y, char color, char font[]) {
     int i;
-    unsigned char *p;
+    char *p;
     char d;
 
     for (i = 0; i < 16; i++) {
@@ -171,11 +172,50 @@ void putfont8(unsigned char *vram, short xsize, int x, int y, char color,
     }
 }
 
-void putfonts8_asc(unsigned char *vram, short xsize, int x, int y, char color,
+void putfonts8_asc(char *vram, short xsize, int x, int y, char color,
                    char s[]) {
     extern char hankaku[4096];
     for (; *s != '\0'; s++) {
         putfont8(vram, xsize, x, y, color, hankaku + *s * 16);
         x += 8;
+    }
+}
+
+void init_mouse_cursor8(char *mouse, char bc)
+/* マウスカーソルを準備（16x16） */
+{
+    static char cursor[16][16] = {
+        "**************..", "*OOOOOOOOOOO*...", "*OOOOOOOOOO*....",
+        "*OOOOOOOOO*.....", "*OOOOOOOO*......", "*OOOOOOO*.......",
+        "*OOOOOOO*.......", "*OOOOOOOO*......", "*OOOO**OOO*.....",
+        "*OOO*..*OOO*....", "*OO*....*OOO*...", "*O*......*OOO*..",
+        "**........*OOO*.", "*..........*OOO*", "............*OO*",
+        ".............***"};
+    int x, y;
+
+    for (y = 0; y < 16; y++) {
+        for (x = 0; x < 16; x++) {
+            if (cursor[y][x] == '*') {
+                mouse[y * 16 + x] = COL8_000000;
+            }
+            if (cursor[y][x] == 'O') {
+                mouse[y * 16 + x] = COL8_FFFFFF;
+            }
+            if (cursor[y][x] == '.') {
+                mouse[y * 16 + x] = bc;
+            }
+        }
+    }
+    return;
+}
+
+void putblock8_8(char vram[], short vxsize, int pxsize, int pysize, int px,
+                 int py, char buf[], int bxsize) {
+
+    int x, y;
+    for (y = 0; y < pysize; y++) {
+        for (x = 0; x < pxsize; x++) {
+            vram[(py + y) * vxsize + (px + x)] = buf[y * bxsize + x];
+        }
     }
 }
