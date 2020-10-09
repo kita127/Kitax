@@ -26,8 +26,8 @@ hankaku.c : hankaku.txt hankaku2dat.pl Makefile
 bootpack.hrb : bootpack.c hankaku.c naskfunc.obj Makefile
 	docker start work
 	docker cp . work:/root/build
-	docker exec -w /root/build work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c hankaku.c mystdio.c naskfunc.obj \
-		./dsctbl/dsctbl.c
+	docker exec -w /root/build work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c hankaku.c mystdio.c \
+		./dsctbl/dsctbl.c ./graphic/graphic.c naskfunc.obj
 	docker cp work:/root/build/bootpack.hrb bootpack.hrb
 	docker exec -w /root work sh -c "rm -r ./build"
 	docker stop work

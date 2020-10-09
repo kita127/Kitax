@@ -43,8 +43,8 @@ void init_gdtidt(void) {
     load_idtr(0x7ff, 0x0026f800);
 }
 
-void set_segmdesc(SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base,
-                  int ar) {
+static void set_segmdesc(SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base,
+                         int ar) {
     if (limit > 0xfffff) {
         ar |= 0x8000; /* G_bit = 1 */
         limit /= 0x1000;
@@ -57,7 +57,8 @@ void set_segmdesc(SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base,
     sd->base_high = (base >> 24) & 0xff;
 }
 
-void set_gatedesc(GATE_DESCRIPTOR *gd, int offset, int selector, int ar) {
+static void set_gatedesc(GATE_DESCRIPTOR *gd, int offset, int selector,
+                         int ar) {
     gd->offset_low = offset & 0xffff;
     gd->selector = selector;
     gd->dw_count = (ar >> 8) & 0xff;
