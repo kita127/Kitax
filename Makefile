@@ -1,6 +1,7 @@
 # デフォルト動作
 # デフォルトは先頭に書く
 
+TARGET = ./bin/kitax.img
 OBJDIR = ./obj
 DEL = rm
 
@@ -12,7 +13,10 @@ default :
 obj : Makefile
 	mkdir ./obj
 
-$(OBJDIR)/ipl10.bin : ipl10.nas obj Makefile
+bin : Makefile
+	mkdir ./bin
+
+$(OBJDIR)/ipl10.bin : ipl10.nas Makefile
 	nasm ipl10.nas -o $(OBJDIR)/ipl10.bin -l $(OBJDIR)/ipl10.lst
 
 $(OBJDIR)/asmhead.bin : asmhead.nas Makefile
@@ -39,9 +43,9 @@ $(OBJDIR)/bootpack.hrb : bootpack.c hankaku.c $(OBJDIR)/naskfunc.obj Makefile
 $(OBJDIR)/kitax.sys : $(OBJDIR)/asmhead.bin $(OBJDIR)/bootpack.hrb Makefile
 	cat $(OBJDIR)/asmhead.bin $(OBJDIR)/bootpack.hrb > $(OBJDIR)/kitax.sys
 
-$(OBJDIR)/kitax.img : $(OBJDIR)/ipl10.bin $(OBJDIR)/kitax.sys Makefile
-	mformat -f 1440 -C -B $(OBJDIR)/ipl10.bin -i $(OBJDIR)/kitax.img ::
-	mcopy -i $(OBJDIR)/kitax.img $(OBJDIR)/kitax.sys ::
+$(TARGET) : obj bin $(OBJDIR)/ipl10.bin $(OBJDIR)/kitax.sys Makefile
+	mformat -f 1440 -C -B $(OBJDIR)/ipl10.bin -i $(TARGET) ::
+	mcopy -i $(TARGET) $(OBJDIR)/kitax.sys ::
 
 # コマンド
 
@@ -49,7 +53,7 @@ asm :
 	make -r $(OBJDIR)/ipl10.bin
 
 img :
-	make -r $(OBJDIR)/kitax.img
+	make -r $(TARGET)
 
 start :
 	docker create -it -w /root --name work ubuntu_for_xcomp
@@ -59,8 +63,9 @@ stop :
 
 run :
 	make img
-	qemu-system-x86_64 -drive file=$(OBJDIR)/kitax.img,format=raw -usb
+	qemu-system-x86_64 -drive file=$(TARGET),format=raw -usb
 
 clean :
 	-$(DEL) -r obj
+	-$(DEL) -r bin
 	-$(DEL) hankaku.c
