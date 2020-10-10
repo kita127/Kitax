@@ -17,6 +17,12 @@ typedef struct {
     short offset_high;
 } GATE_DESCRIPTOR;
 
+#define SET_D ((short)(0x4000U))
+
+#define UNUSED_DESC ((short)0x0000U)
+#define SYS_WR      ((short)0x0092U)
+#define SYS_X       ((short)0x009aU)
+
 /* *** プロトタイプ宣言 *** */
 static void set_segmdesc(SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base,
                          int ar);
@@ -32,8 +38,8 @@ void init_gdtidt(void) {
     for (i = 0; i < 8192; i++) {
         set_segmdesc(gdt + i, 0, 0, 0);
     }
-    set_segmdesc(gdt + 1, 0xffffffff, 0x00000000, 0x4092);
-    set_segmdesc(gdt + 2, 0x0007ffff, 0x00280000, 0x409a);
+    set_segmdesc(gdt + 1, 0xffffffff, 0x00000000, (SET_D | SYS_WR));
+    set_segmdesc(gdt + 2, 0x0007ffff, 0x00280000, (SET_D | SYS_X));
     load_gdtr(0xffff, 0x00270000);
 
     /* IDT の初期化 */
@@ -43,10 +49,23 @@ void init_gdtidt(void) {
     load_idtr(0x7ff, 0x0026f800);
 }
 
+/* ar : セグメント属性                                            */
+/*     bit 長 : 16                                                */
+/*     上位 4 bit は「拡張アクセス権」であり 3 bit 目は           */
+/*     G フラグ 2bit 目はセグメントモード 0 は 16ビットモード     */
+/*     1 は 32bit モードを表す                                    */
+/*     セグメント属性は 12 bit だが 16 bit で用意し               */
+/*     xxxx0000xxxxxxxx の様に上位                                */
+/*     4 bit と下位 8 bit                                         */
+/*                                                                */
+/*     この辺全般の詳細は書籍の 123P 6−4 「やり残した説明」を参照 */
+
 static void set_segmdesc(SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base,
                          int ar) {
     if (limit > 0xfffff) {
+        /* G bit を ON にし limit をページ単位(4K)にする */
         ar |= 0x8000; /* G_bit = 1 */
+        /* 4K 単位にするため 4096 で割る */
         limit /= 0x1000;
     }
     sd->limit_low = limit & 0xffff;
