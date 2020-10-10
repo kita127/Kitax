@@ -145,7 +145,7 @@ haribote OS の実行形式にビルドするためのリンカスクリプト�
 
 1. docker で ubuntu のリポジトリを入手する
     * `docker pull ubunntu:18.04`
-1. 作成した ubuntu コンテナに gcc をインストールする
+1. 作成した ubuntu コンテナに `gcc` と `make` をインストールする
 1. ubuntu コンテナのホームディレクトリに hrb.ld を置く
 1. ここまでの環境の ubuntu コンテナから image を作成する
     * イメージ名 `ubuntu_for_xcomp` で作成
@@ -167,6 +167,15 @@ GCC のコマンドは以下を参考にさせていただきました。あり�
 
 bootpack が位置独立実行形式(position independent cod)のためのシンボル `_GLOBAL_OFFSET_TABLE_` を
 参照しようとするが不要なためオプション `-fno-pic` を追加した
+
+#### docker コマンド覚書
+
+* docker image からコンテナ作成＆起動
+    * `docker run -it -d --name コンテナ名 イメージ:バージョン`
+* コンテナをイメージにコミット
+    * `docker commit コンテナ名 イメージ`
+* 起動している ubuntu コンテナの bash を起動する
+    * `docker exec -it コンテナ名 bash`
 
 ### hankaku
 

@@ -3,6 +3,7 @@
 
 TARGET = ./bin/kitax.img
 OBJDIR = ./obj
+NASM = nasm
 DEL = rm
 
 default :
@@ -16,15 +17,9 @@ obj : Makefile
 bin : Makefile
 	mkdir ./bin
 
-$(OBJDIR)/ipl10.bin : ipl10.nas Makefile
-	nasm ipl10.nas -o $(OBJDIR)/ipl10.bin -l $(OBJDIR)/ipl10.lst
-
-$(OBJDIR)/asmhead.bin : asmhead.nas Makefile
-	nasm asmhead.nas -o $(OBJDIR)/asmhead.bin -l $(OBJDIR)/asmhead.lst
-
 # nasm ではオブジェクトファイルとして出力する場合は -fwin32 を指定する
 $(OBJDIR)/naskfunc.obj : naskfunc.nas Makefile
-	nasm naskfunc.nas -fwin32 -o $(OBJDIR)/naskfunc.obj -l $(OBJDIR)/naskfunc.lst
+	$(NASM) naskfunc.nas -fwin32 -o $(OBJDIR)/naskfunc.obj -l $(OBJDIR)/naskfunc.lst
 
 hankaku.c : hankaku.txt hankaku2dat.pl Makefile
 	perl hankaku2dat.pl > hankaku.c
@@ -34,8 +29,7 @@ hankaku.c : hankaku.txt hankaku2dat.pl Makefile
 $(OBJDIR)/bootpack.hrb : bootpack.c hankaku.c $(OBJDIR)/naskfunc.obj Makefile
 	docker start work
 	docker cp . work:/root/build
-	docker exec -w /root/build work gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb bootpack.c hankaku.c mystdio.c \
-		./dsctbl/dsctbl.c ./graphic/graphic.c $(OBJDIR)/naskfunc.obj
+	docker exec -w /root/build work make buildOnDocker
 	docker cp work:/root/build/bootpack.hrb $(OBJDIR)/bootpack.hrb
 	docker exec -w /root work sh -c "rm -r ./build"
 	docker stop work
@@ -47,7 +41,16 @@ $(TARGET) : obj bin $(OBJDIR)/ipl10.bin $(OBJDIR)/kitax.sys Makefile
 	mformat -f 1440 -C -B $(OBJDIR)/ipl10.bin -i $(TARGET) ::
 	mcopy -i $(TARGET) $(OBJDIR)/kitax.sys ::
 
+
+# 一般規則
+
+$(OBJDIR)/%.bin : %.nas Makefile
+	$(NASM) $*.nas -o $(OBJDIR)/$*.bin -l $(OBJDIR)/$*.lst
+
 # コマンド
+
+buildOnDocker :
+	find . -name '*.c' -or -name '*.obj' | xargs gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb
 
 asm :
 	make -r $(OBJDIR)/ipl10.bin
