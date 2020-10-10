@@ -3,8 +3,9 @@
 
 TARGET = ./bin/kitax.img
 OBJDIR = ./obj
-NASM = nasm
-DEL = rm
+CC1    = gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld
+NASM   = nasm
+DEL    = rm
 
 default :
 	make img
@@ -50,7 +51,7 @@ $(OBJDIR)/%.bin : %.nas Makefile
 # コマンド
 
 buildOnDocker :
-	find . -name '*.c' -or -name '*.obj' | xargs gcc -march=i486 -m32 -nostdlib -fno-pic -T os.ld -o bootpack.hrb
+	find . -name '*.c' -or -name '*.obj' | xargs $(CC1) -o bootpack.hrb
 
 asm :
 	make -r $(OBJDIR)/ipl10.bin
