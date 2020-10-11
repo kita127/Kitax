@@ -1,5 +1,6 @@
 #include "./dsctbl/dsctbl.h"
 #include "./graphic/graphic.h"
+#include "./int/int.h"
 #include "./naskfunc/naskfunc.h"
 
 typedef struct {
@@ -43,6 +44,7 @@ void HariMain(void) {
     char mcursor[16 * 16];
 
     init_gdtidt();
+    init_pic();
     init_palette();
     init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
     mx = (binfo->scrnx - 16) / 2;
