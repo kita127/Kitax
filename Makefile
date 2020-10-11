@@ -19,8 +19,8 @@ bin : Makefile
 	mkdir ./bin
 
 # nasm ではオブジェクトファイルとして出力する場合は -fwin32 を指定する
-$(OBJDIR)/naskfunc.obj : naskfunc.nas Makefile
-	$(NASM) naskfunc.nas -fwin32 -o $(OBJDIR)/naskfunc.obj -l $(OBJDIR)/naskfunc.lst
+$(OBJDIR)/naskfunc.obj : ./naskfunc/naskfunc.nas Makefile
+	$(NASM) ./naskfunc/naskfunc.nas -fwin32 -o $(OBJDIR)/naskfunc.obj -l $(OBJDIR)/naskfunc.lst
 
 hankaku.c : hankaku.txt hankaku2dat.pl Makefile
 	perl hankaku2dat.pl > hankaku.c
