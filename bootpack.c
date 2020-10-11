@@ -1,6 +1,7 @@
 #include "./dsctbl/dsctbl.h"
 #include "./graphic/graphic.h"
 #include "./int/int.h"
+#include "./lib/lib.h"
 #include "./naskfunc/naskfunc.h"
 
 typedef struct {
@@ -9,12 +10,10 @@ typedef struct {
     char *vram;
 } BOOTINFO;
 
-void mysprintf(char *str, char *fmt, ...);
 static void putfont8(char *vram, short xsize, int x, int y, char color,
                      char font[]);
 static void putfonts8_asc(char *vram, short xsize, int x, int y, char color,
                           char s[]);
-
 
 void HariMain(void) {
     BOOTINFO *binfo = (BOOTINFO *)0x0ff0;
