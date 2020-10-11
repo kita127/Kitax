@@ -1,8 +1,11 @@
+#include "./graphic.h"
 #include "../naskfunc/naskfunc.h"
 
 #define PALETTE_NUM (16)
 
 static void set_palette(int start, int end, unsigned char rgb[]);
+static void boxfill8(char *vram, int xsize, unsigned char color, int x_s,
+                     int y_s, int x_e, int y_e);
 
 void init_palette(void) {
 
@@ -26,6 +29,77 @@ void init_palette(void) {
     };
 
     set_palette(0, (PALETTE_NUM - 1), table_rgb);
+}
+
+void init_screen(char *vram, int xsize, int ysize) {
+    boxfill8(vram, xsize, COL8_008484, 0, 0, xsize - 1, ysize - 29);
+    boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 28, xsize - 1, ysize - 28);
+    boxfill8(vram, xsize, COL8_FFFFFF, 0, ysize - 27, xsize - 1, ysize - 27);
+    boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 26, xsize - 1, ysize - 1);
+
+    boxfill8(vram, xsize, COL8_FFFFFF, 3, ysize - 24, 59, ysize - 24);
+    boxfill8(vram, xsize, COL8_FFFFFF, 2, ysize - 24, 2, ysize - 4);
+    boxfill8(vram, xsize, COL8_848484, 3, ysize - 4, 59, ysize - 4);
+    boxfill8(vram, xsize, COL8_848484, 59, ysize - 23, 59, ysize - 5);
+    boxfill8(vram, xsize, COL8_000000, 2, ysize - 3, 59, ysize - 3);
+    boxfill8(vram, xsize, COL8_000000, 60, ysize - 24, 60, ysize - 3);
+
+    boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 24, xsize - 4,
+             ysize - 24);
+    boxfill8(vram, xsize, COL8_848484, xsize - 47, ysize - 23, xsize - 47,
+             ysize - 4);
+    boxfill8(vram, xsize, COL8_FFFFFF, xsize - 47, ysize - 3, xsize - 4,
+             ysize - 3);
+    boxfill8(vram, xsize, COL8_FFFFFF, xsize - 3, ysize - 24, xsize - 3,
+             ysize - 3);
+}
+
+void init_mouse_cursor8(char *mouse, char bc) {
+    /* マウスカーソルを準備（16x16） */
+    static char cursor[16][16] = {
+        "**************..", "*OOOOOOOOOOO*...", "*OOOOOOOOOO*....",
+        "*OOOOOOOOO*.....", "*OOOOOOOO*......", "*OOOOOOO*.......",
+        "*OOOOOOO*.......", "*OOOOOOOO*......", "*OOOO**OOO*.....",
+        "*OOO*..*OOO*....", "*OO*....*OOO*...", "*O*......*OOO*..",
+        "**........*OOO*.", "*..........*OOO*", "............*OO*",
+        ".............***"};
+    int x, y;
+
+    for (y = 0; y < 16; y++) {
+        for (x = 0; x < 16; x++) {
+            if (cursor[y][x] == '*') {
+                mouse[y * 16 + x] = COL8_000000;
+            }
+            if (cursor[y][x] == 'O') {
+                mouse[y * 16 + x] = COL8_FFFFFF;
+            }
+            if (cursor[y][x] == '.') {
+                mouse[y * 16 + x] = bc;
+            }
+        }
+    }
+    return;
+}
+
+void putblock8_8(char vram[], short vxsize, int pxsize, int pysize, int px,
+                 int py, char buf[], int bxsize) {
+
+    int x, y;
+    for (y = 0; y < pysize; y++) {
+        for (x = 0; x < pxsize; x++) {
+            vram[(py + y) * vxsize + (px + x)] = buf[y * bxsize + x];
+        }
+    }
+}
+
+static void boxfill8(char *vram, int xsize, unsigned char color, int x_s,
+                     int y_s, int x_e, int y_e) {
+    int x, y;
+    for (y = y_s; y <= y_e; y++) {
+        for (x = x_s; x <= x_e; x++) {
+            vram[y * xsize + x] = color;
+        }
+    }
 }
 
 static void set_palette(int start, int end, unsigned char rgb[]) {
