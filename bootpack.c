@@ -1,3 +1,4 @@
+#include "./bootpack.h"
 #include "./dsctbl/dsctbl.h"
 #include "./graphic/graphic.h"
 #include "./int/int.h"
@@ -16,7 +17,7 @@ static void putfonts8_asc(char *vram, short xsize, int x, int y, char color,
                           char s[]);
 
 void HariMain(void) {
-    BOOTINFO *binfo = (BOOTINFO *)0x0ff0;
+    BOOTINFO *binfo = (BOOTINFO *)ADR_BOOTINFO;
     char s[64];
     int mx, my;
     char mcursor[16 * 16];
