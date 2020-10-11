@@ -4,8 +4,6 @@
 #define PALETTE_NUM (16)
 
 static void set_palette(int start, int end, unsigned char rgb[]);
-static void boxfill8(char *vram, int xsize, unsigned char color, int x_s,
-                     int y_s, int x_e, int y_e);
 
 void init_palette(void) {
 
@@ -92,8 +90,8 @@ void putblock8_8(char vram[], short vxsize, int pxsize, int pysize, int px,
     }
 }
 
-static void boxfill8(char *vram, int xsize, unsigned char color, int x_s,
-                     int y_s, int x_e, int y_e) {
+void boxfill8(char *vram, int xsize, unsigned char color, int x_s, int y_s,
+              int x_e, int y_e) {
     int x, y;
     for (y = y_s; y <= y_e; y++) {
         for (x = x_s; x <= x_e; x++) {

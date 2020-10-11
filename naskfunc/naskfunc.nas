@@ -19,6 +19,13 @@
 	GLOBAL	io_store_eflags
 	GLOBAL	load_gdtr
 	GLOBAL	load_idtr
+	GLOBAL	asm_inthandler21
+	GLOBAL	asm_inthandler27
+	GLOBAL	asm_inthandler2c
+
+	EXTERN	inthandler21
+	EXTERN	inthandler27
+	EXTERN	inthandler2c
 
 ; 以下は実際の関数
 
@@ -98,3 +105,57 @@ load_idtr:		; void load_idtr(int limit, int addr);
 		MOV		[ESP+6],AX
 		LIDT	[ESP+6]
 		RET
+
+
+; * 割り込み完了後は IRETD 命令を実行する必要がある
+; * 割り込み中に各レジスタが書き変わる可能性があるため
+;   各レジスタをスタックに push し割り込み処理完了後値を復帰する
+; * PUSHAD/POPAD 命令は EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI レジスタをまとめて push するのと同様
+; * C言語では SS, DS, ES は同じ値でないといけない
+asm_inthandler21:
+		PUSH	ES
+		PUSH	DS
+		PUSHAD
+		MOV		EAX,ESP
+		PUSH	EAX
+		MOV		AX,SS
+		MOV		DS,AX
+		MOV		ES,AX
+		CALL	inthandler21
+		POP		EAX
+		POPAD
+		POP		DS
+		POP		ES
+		IRETD
+
+asm_inthandler27:
+		PUSH	ES
+		PUSH	DS
+		PUSHAD
+		MOV		EAX,ESP
+		PUSH	EAX
+		MOV		AX,SS
+		MOV		DS,AX
+		MOV		ES,AX
+		CALL	inthandler27
+		POP		EAX
+		POPAD
+		POP		DS
+		POP		ES
+		IRETD
+
+asm_inthandler2c:
+		PUSH	ES
+		PUSH	DS
+		PUSHAD
+		MOV		EAX,ESP
+		PUSH	EAX
+		MOV		AX,SS
+		MOV		DS,AX
+		MOV		ES,AX
+		CALL	inthandler2c
+		POP		EAX
+		POPAD
+		POP		DS
+		POP		ES
+		IRETD

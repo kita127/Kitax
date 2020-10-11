@@ -19,9 +19,17 @@ typedef struct {
 
 #define SET_D ((short)(0x4000U))
 
-#define UNUSED_DESC ((short)0x0000U)
-#define SYS_WR      ((short)0x0092U)
-#define SYS_X       ((short)0x009aU)
+#define UNUSED_DESC  ((short)0x0000U)
+#define SYS_WR       ((short)0x0092U)
+#define SYS_X        ((short)0x009aU)
+#define LIMIT_BOTPAK (0x0007ffff)
+#define ADR_BOTPAK   (0x00280000)
+#define LIMIT_GDT    (0x0000ffff)
+#define ADR_GDT      (0x00270000)
+#define LIMIT_IDT    (0x000007ff)
+#define ADR_IDT      (0x0026f800)
+/* 割り込み処理に関するマーク */
+#define AR_INTGATE32 (0x008e)
 
 /* *** プロトタイプ宣言 *** */
 static void set_segmdesc(SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base,
@@ -30,23 +38,32 @@ static void set_gatedesc(GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 
 /* *** 関数定義 *** */
 void init_gdtidt(void) {
-    SEGMENT_DESCRIPTOR *gdt = (SEGMENT_DESCRIPTOR *)0x00270000;
-    GATE_DESCRIPTOR *idt = (GATE_DESCRIPTOR *)0x0026f800;
+    SEGMENT_DESCRIPTOR *gdt = (SEGMENT_DESCRIPTOR *)ADR_GDT;
+    GATE_DESCRIPTOR *idt = (GATE_DESCRIPTOR *)ADR_IDT;
     int i;
 
     /* GDT の初期化 */
-    for (i = 0; i < 8192; i++) {
+    for (i = 0; i <= LIMIT_GDT / 8; i++) {
         set_segmdesc(gdt + i, 0, 0, 0);
     }
+
+    /* 領域全体を表すセグメント */
     set_segmdesc(gdt + 1, 0xffffffff, 0x00000000, (SET_D | SYS_WR));
-    set_segmdesc(gdt + 2, 0x0007ffff, 0x00280000, (SET_D | SYS_X));
-    load_gdtr(0xffff, 0x00270000);
+    set_segmdesc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, (SET_D | SYS_X));
+    load_gdtr(LIMIT_GDT, ADR_GDT);
 
     /* IDT の初期化 */
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i <= LIMIT_IDT / 8; i++) {
         set_gatedesc(idt + i, 0, 0, 0);
     }
-    load_idtr(0x7ff, 0x0026f800);
+    load_idtr(LIMIT_IDT, ADR_IDT);
+
+    /* IDT の設定 */
+    /* 2 * 8 は２番目のセグメントに配置することを表す */
+    /* 2番目のセグメントは bootpack.hrb のセグメント */
+    set_gatedesc(idt + 0x21, (int)asm_inthandler21, 2 * 8, AR_INTGATE32);
+    set_gatedesc(idt + 0x27, (int)asm_inthandler27, 2 * 8, AR_INTGATE32);
+    set_gatedesc(idt + 0x2c, (int)asm_inthandler2c, 2 * 8, AR_INTGATE32);
 }
 
 /* ar : セグメント属性                                            */

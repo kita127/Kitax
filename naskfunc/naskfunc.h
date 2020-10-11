@@ -10,4 +10,8 @@ void io_cli(void);
 void load_gdtr(int limit, int addr);
 void load_idtr(int limit, int addr);
 
-#endif  /* NASKFUNC_H */
+void asm_inthandler21(void);
+void asm_inthandler27(void);
+void asm_inthandler2c(void);
+
+#endif /* NASKFUNC_H */

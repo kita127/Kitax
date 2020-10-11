@@ -1,11 +1,15 @@
+#include "../bootpack.h"
+#include "../graphic/graphic.h"
 #include "../naskfunc/naskfunc.h"
 
 #define PIC0_ICW1 (0x0020)
+#define PIC0_OCW2 (0x0020)
 #define PIC0_IMR  (0x0021)
 #define PIC0_ICW2 (0x0021)
 #define PIC0_ICW3 (0x0021)
 #define PIC0_ICW4 (0x0021)
 #define PIC1_ICW1 (0x00a0)
+#define PIC1_OCW2 (0x00a0)
 #define PIC1_IMR  (0x00a1)
 #define PIC1_ICW2 (0x00a1)
 #define PIC1_ICW3 (0x00a1)
@@ -51,4 +55,40 @@ void init_pic(void) {
     /* PIC1 のみ割り込みを有効に設定 */
     io_out8(PIC0_IMR, 0xfb);
     io_out8(PIC1_IMR, 0xff);
+}
+
+/* PS/2キーボードからの割り込み */
+void inthandler21(int *esp) {
+    BOOTINFO *binfo = (BOOTINFO *)ADR_BOOTINFO;
+    boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 15);
+    putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF,
+                  "INT 21 (IRQ-1) : PS/2 keyboard");
+    while (1) {
+        io_hlt();
+    }
+}
+
+/* PS/2マウスからの割り込み */
+void inthandler2c(int *esp) {
+    BOOTINFO *binfo = (BOOTINFO *)ADR_BOOTINFO;
+    boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 15);
+    putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF,
+                  "INT 2C (IRQ-1) : PS/2 mouse");
+    while (1) {
+        io_hlt();
+    }
+}
+
+/*
+PIC0からの不完全割り込み対策
+Athlon64X2機などではチップセットの都合によりPICの初期化時にこの割り込みが1度だけおこる
+この割り込み処理関数は、その割り込みに対して何もしないでやり過ごす
+なぜ何もしなくていいの？
+    →  この割り込みはPIC初期化時の電気的なノイズによって発生したものなので、
+        まじめに何か処理してやる必要がない。
+*/
+void inthandler27(int *esp) {
+
+    /* IRQ-07受付完了をPICに通知(7-1参照) */
+    io_out8(PIC0_OCW2, 0x67);
 }

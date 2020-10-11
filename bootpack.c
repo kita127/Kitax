@@ -5,16 +5,8 @@
 #include "./lib/lib.h"
 #include "./naskfunc/naskfunc.h"
 
-typedef struct {
-    char cyls, leds, vmode, reserve;
-    short scrnx, scrny;
-    char *vram;
-} BOOTINFO;
-
 static void putfont8(char *vram, short xsize, int x, int y, char color,
                      char font[]);
-static void putfonts8_asc(char *vram, short xsize, int x, int y, char color,
-                          char s[]);
 
 void HariMain(void) {
     BOOTINFO *binfo = (BOOTINFO *)ADR_BOOTINFO;
@@ -75,8 +67,8 @@ static void putfont8(char *vram, short xsize, int x, int y, char color,
     }
 }
 
-static void putfonts8_asc(char *vram, short xsize, int x, int y, char color,
-                          char s[]) {
+void putfonts8_asc(char *vram, short xsize, int x, int y, char color,
+                   char s[]) {
     extern char hankaku[4096];
     for (; *s != '\0'; s++) {
         putfont8(vram, xsize, x, y, color, hankaku + *s * 16);
