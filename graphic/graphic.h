@@ -25,5 +25,6 @@ void putblock8_8(char vram[], short vxsize, int pxsize, int pysize, int px,
                  int py, char buf[], int bxsize);
 void boxfill8(char *vram, int xsize, unsigned char color, int x_s, int y_s,
               int x_e, int y_e);
+void putfonts8_asc(char *vram, short xsize, int x, int y, char color, char s[]);
 
 #endif /* GRAPHIC_H */

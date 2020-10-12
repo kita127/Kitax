@@ -9,6 +9,4 @@ typedef struct {
     char *vram;
 } BOOTINFO;
 
-void putfonts8_asc(char *vram, short xsize, int x, int y, char color, char s[]);
-
 #endif /* BOOTPACK_H */
