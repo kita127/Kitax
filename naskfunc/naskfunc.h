@@ -6,6 +6,7 @@ void io_hlt(void);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 void io_out8(int port, char data);
+int io_in8(int port);
 void io_cli(void);
 void io_sti(void);
 void load_gdtr(int limit, int addr);
