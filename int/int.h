@@ -16,4 +16,11 @@ void init_pic(void);
 #define PIC1_ICW3 (0x00a1)
 #define PIC1_ICW4 (0x00a1)
 
+typedef struct {
+    unsigned char data;
+    unsigned char has_notice;
+} KEYBUF;
+
+extern KEYBUF keybuf;
+
 #endif /* INT_H */

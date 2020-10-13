@@ -10,6 +10,9 @@
 #define PORT_KEYDAT (0x0060)
 
 #define IRQ01 (0x61)
+
+KEYBUF keybuf;
+
 /*
 PIC : programmable interrupt controler
       PIC0 の IRQ2 ピン？に PIC1 が接続されている
@@ -51,17 +54,16 @@ void init_pic(void) {
 
 /* PS/2キーボードからの割り込み */
 void inthandler21(int *esp) {
-    BOOTINFO *binfo = (BOOTINFO *)ADR_BOOTINFO;
     unsigned char data;
-    char s[4];
 
     /* IRQ-01受付完了をPICに通知 */
     io_out8(PIC0_OCW2, IRQ01);
     data = io_in8(PORT_KEYDAT);
 
-    mysprintf(s, "%x", data);
-    boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
-    putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+    if (keybuf.has_notice == 0) {
+        keybuf.data = data;
+        keybuf.has_notice = 1;
+    }
 }
 
 /* PS/2マウスからの割り込み */

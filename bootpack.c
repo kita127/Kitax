@@ -10,6 +10,7 @@ void HariMain(void) {
     char s[64];
     int mx, my;
     char mcursor[16 * 16];
+    unsigned char keydata;
 
     init_gdtidt();
     init_pic();
@@ -30,6 +31,16 @@ void HariMain(void) {
     io_out8(PIC1_IMR, 0xef); /* マウスを許可(11101111) */
 
     for (;;) {
-        io_hlt();
+        io_cli();
+        if (keybuf.has_notice == 0) {
+            io_stihlt();
+        } else {
+            keydata = keybuf.data;
+            keybuf.has_notice = 0;
+            io_sti();
+            mysprintf(s, "%x", keydata);
+            boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
+            putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+        }
     }
 }
