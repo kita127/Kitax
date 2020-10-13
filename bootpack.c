@@ -32,11 +32,15 @@ void HariMain(void) {
 
     for (;;) {
         io_cli();
-        if (keybuf.has_notice == 0) {
+        if (keybuf.len == 0) {
             io_stihlt();
         } else {
-            keydata = keybuf.data;
-            keybuf.has_notice = 0;
+            keydata = keybuf.data[keybuf.next_r];
+            keybuf.len--;
+            keybuf.next_r++;
+            if (keybuf.next_r >= KEYBUF_SIZE) {
+                keybuf.next_r = 0;
+            }
             io_sti();
             mysprintf(s, "%x", keydata);
             boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);

@@ -60,9 +60,13 @@ void inthandler21(int *esp) {
     io_out8(PIC0_OCW2, IRQ01);
     data = io_in8(PORT_KEYDAT);
 
-    if (keybuf.has_notice == 0) {
-        keybuf.data = data;
-        keybuf.has_notice = 1;
+    if (keybuf.len < KEYBUF_SIZE) {
+        keybuf.data[keybuf.next_w] = data;
+        keybuf.len++;
+        keybuf.next_w++;
+        if (keybuf.next_w >= KEYBUF_SIZE) {
+            keybuf.next_w = 0;
+        }
     }
 }
 
