@@ -1,7 +1,7 @@
 #ifndef INT_H
 #define INT_H
 
-void init_pic(void);
+#include "../fifo/fifo.h"
 
 #define PIC0_ICW1 (0x0020)
 #define PIC0_OCW2 (0x0020)
@@ -18,13 +18,8 @@ void init_pic(void);
 
 #define KEYBUF_SIZE (32)
 
-typedef struct {
-    unsigned char data[KEYBUF_SIZE];
-    int next_r;
-    int next_w;
-    int len;
-} KEYBUF;
+extern FIFO8 keyfifo;
 
-extern KEYBUF keybuf;
+void init_pic(void);
 
 #endif /* INT_H */

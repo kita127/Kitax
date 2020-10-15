@@ -1,9 +1,12 @@
 #include "./bootpack.h"
 #include "./dsctbl/dsctbl.h"
+#include "./fifo/fifo.h"
 #include "./graphic/graphic.h"
 #include "./int/int.h"
 #include "./lib/lib.h"
 #include "./naskfunc/naskfunc.h"
+
+#define KEYBUF_NUM (32)
 
 void HariMain(void) {
     BOOTINFO *binfo = (BOOTINFO *)ADR_BOOTINFO;
@@ -11,6 +14,8 @@ void HariMain(void) {
     int mx, my;
     char mcursor[16 * 16];
     unsigned char keydata;
+    unsigned char keybuf[KEYBUF_NUM];
+    fifo8_init(&keyfifo, KEYBUF_NUM, keybuf);
 
     init_gdtidt();
     init_pic();
@@ -32,15 +37,10 @@ void HariMain(void) {
 
     for (;;) {
         io_cli();
-        if (keybuf.len == 0) {
+        if (fifo8_data_count(&keyfifo) == 0) {
             io_stihlt();
         } else {
-            keydata = keybuf.data[keybuf.next_r];
-            keybuf.len--;
-            keybuf.next_r++;
-            if (keybuf.next_r >= KEYBUF_SIZE) {
-                keybuf.next_r = 0;
-            }
+            keydata = fifo8_get(&keyfifo);
             io_sti();
             mysprintf(s, "%x", keydata);
             boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);

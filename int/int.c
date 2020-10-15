@@ -1,5 +1,6 @@
 #include "./int.h"
 #include "../bootpack.h"
+#include "../fifo/fifo.h"
 #include "../graphic/graphic.h"
 #include "../lib/lib.h"
 #include "../naskfunc/naskfunc.h"
@@ -9,9 +10,10 @@
 
 #define PORT_KEYDAT (0x0060)
 
+/* IRQ 番号に 0x60 を加算した値 */
 #define IRQ01 (0x61)
 
-KEYBUF keybuf;
+FIFO8 keyfifo;
 
 /*
 PIC : programmable interrupt controler
@@ -59,15 +61,7 @@ void inthandler21(int *esp) {
     /* IRQ-01受付完了をPICに通知 */
     io_out8(PIC0_OCW2, IRQ01);
     data = io_in8(PORT_KEYDAT);
-
-    if (keybuf.len < KEYBUF_SIZE) {
-        keybuf.data[keybuf.next_w] = data;
-        keybuf.len++;
-        keybuf.next_w++;
-        if (keybuf.next_w >= KEYBUF_SIZE) {
-            keybuf.next_w = 0;
-        }
-    }
+    fifo8_put(&keyfifo, data);
 }
 
 /* PS/2マウスからの割り込み */
