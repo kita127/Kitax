@@ -11,9 +11,15 @@
 #define PORT_KEYDAT (0x0060)
 
 /* IRQ 番号に 0x60 を加算した値 */
+/* PIC0 IRQ0 - IRQ7 */
 #define IRQ01 (0x61)
+#define IRQ02 (0x62)
+
+/* PIC1 IRQ8 - IRQ15 */
+#define IRQ12 (0x64)
 
 FIFO8 keyfifo;
+FIFO8 mousefifo;
 
 /*
 PIC : programmable interrupt controler
@@ -66,13 +72,18 @@ void inthandler21(int *esp) {
 
 /* PS/2マウスからの割り込み */
 void inthandler2c(int *esp) {
-    BOOTINFO *binfo = (BOOTINFO *)ADR_BOOTINFO;
-    boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 15);
-    putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF,
-                  "INT 2C (IRQ-1) : PS/2 mouse");
-    while (1) {
-        io_hlt();
-    }
+    unsigned char data;
+
+    /* IRQ-12 受付完了を PIC1 に通知 */
+    io_out8(PIC1_OCW2, IRQ12);
+
+    /* IRQ-02 受付完了を PIC0 に通知 */
+    /* IRQ-02 スレーブがある */
+    io_out8(PIC0_OCW2, IRQ02);
+
+    /* マウスのデータもキーボードのポートから取得する */
+    data = io_in8(PORT_KEYDAT);
+    fifo8_put(&mousefifo, data);
 }
 
 /*

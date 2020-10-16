@@ -7,6 +7,7 @@
 #include "./naskfunc/naskfunc.h"
 
 #define KEYBUF_NUM        (32)
+#define MOUSE_NUM         (128)
 #define PORT_KEYSTA       (0x0064)
 #define PORT_KEYCMD       (0x0064)
 #define PORT_KEYDAT       (0x0060)
@@ -26,8 +27,9 @@ void HariMain(void) {
     char s[64];
     int mx, my;
     char mcursor[16 * 16];
-    unsigned char keydata;
+    unsigned char data;
     unsigned char keybuf[KEYBUF_NUM];
+    unsigned char mousebuf[MOUSE_NUM];
 
     init_gdtidt();
     init_pic();
@@ -35,6 +37,7 @@ void HariMain(void) {
     io_sti();
 
     fifo8_init(&keyfifo, KEYBUF_NUM, keybuf);
+    fifo8_init(&mousefifo, MOUSE_NUM, mousebuf);
     io_out8(PIC0_IMR, 0xf9); /* PIC1とキーボードを許可(11111001) */
     io_out8(PIC1_IMR, 0xef); /* マウスを許可(11101111) */
 
@@ -54,14 +57,24 @@ void HariMain(void) {
 
     for (;;) {
         io_cli();
-        if (fifo8_data_count(&keyfifo) == 0) {
+        if (fifo8_data_count(&keyfifo) + fifo8_data_count(&mousefifo) == 0) {
             io_stihlt();
         } else {
-            keydata = fifo8_get(&keyfifo);
-            io_sti();
-            mysprintf(s, "%x", keydata);
-            boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
-            putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+            if (fifo8_data_count(&keyfifo) != 0) {
+                data = fifo8_get(&keyfifo);
+                io_sti();
+                mysprintf(s, "%x", data);
+                boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
+                putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+            } else if (fifo8_data_count(&mousefifo) != 0) {
+                data = fifo8_get(&mousefifo);
+                io_sti();
+                mysprintf(s, "%x", data);
+                boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 32, 16, 47,
+                         31);
+                putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF,
+                              s);
+            }
         }
     }
 }

@@ -19,6 +19,7 @@
 #define KEYBUF_SIZE (32)
 
 extern FIFO8 keyfifo;
+extern FIFO8 mousefifo;
 
 void init_pic(void);
 
