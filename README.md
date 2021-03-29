@@ -3,6 +3,10 @@
 
 書籍[30日でできる！ OS自作入門](https://book.mynavi.jp/supportsite/detail/4839919844.html)を元に作成したOS
 
+![kitax_gif](./image/20210329_kitax.gif)
+
+2021/03/30 時点
+
 ## 環境
 
 * 開発PC
@@ -14,6 +18,7 @@
 
 * 事前準備
     * C コンパイルするために docker コンテナの起動が必要
+    * docker アプリケーションを起動する
     * `$ make start`
 * OS のイメージファイルを作成
     * `$ make`
