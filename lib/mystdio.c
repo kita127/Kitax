@@ -36,6 +36,8 @@ int hex2asc(char *str,
     return len_buf;
 }
 
+/* 簡易的な sprintf */
+/* %d と %x いしか対応していない */
 void mysprintf(char *str, char *fmt, ...) {
     va_list list;
     int i, len;
